@@ -1,0 +1,15 @@
+src/main/resources/bart-pi.properties
+
+target
+*.class
+
+*.iml
+*.ipr
+*.iws
+.idea
+out
+
+# Package Files #
+*.jar
+*.war
+*.ear
