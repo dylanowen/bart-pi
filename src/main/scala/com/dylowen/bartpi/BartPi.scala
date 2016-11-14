@@ -9,7 +9,8 @@ import akka.http.scaladsl.server.Route
 import akka.pattern.ask
 import akka.stream.ActorMaterializer
 import akka.util.Timeout
-import com.dylowen.bartpi.BartActor.State
+import com.dylowen.bartpi.actor.StatusActor
+import com.dylowen.bartpi.actor.StatusActor.State
 import org.json4s.{DefaultFormats, jackson}
 import de.heikoseeberger.akkahttpjson4s._
 
@@ -30,7 +31,7 @@ object BartPi {
   private implicit val executionContext = system.dispatcher
   implicit val timeout = Timeout(5.seconds)
 
-  private val bartActor: ActorRef = this.system.actorOf(BartActor.props, BartActor.getClass.getCanonicalName)
+  private val bartActor: ActorRef = StatusActor.get
 
   def main(args: Array[String]): Unit = {
     val bartApiKey = Properties.Main.getProperty("bart.api.key")
@@ -61,9 +62,9 @@ object BartPi {
             |</html>
           """.stripMargin))
       }
-    } ~ path("state") {
+    } ~ path("status") {
       get {
-       complete((bartActor ? BartActor.Read).map[ToResponseMarshallable] {
+       complete((bartActor ? StatusActor.Read).map[ToResponseMarshallable] {
          case state: State => state
        })
       }
@@ -81,7 +82,7 @@ object BartPi {
   }
 
   private def setupScheduler(): () => Unit = {
-    val scheduler = new Scheduler(bartActor, system)
+    val scheduler = new Scheduler
     scheduler.start()
 
     () => {

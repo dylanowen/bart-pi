@@ -3,6 +3,7 @@ package com.dylowen.bartpi
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorRef, ActorSystem, Cancellable, Props}
+import com.dylowen.bartpi.actor.UpdateBartActor
 
 import scala.concurrent.duration.Duration
 
@@ -12,10 +13,10 @@ import scala.concurrent.duration.Duration
   * @author dylan.owen
   * @since Nov-2016
   */
-class Scheduler(private val bartActor: ActorRef, private implicit val system: ActorSystem) {
+class Scheduler(private implicit val system: ActorSystem) {
   private implicit val executionContext = system.dispatcher
 
-  private val updateBartActor = this.system.actorOf(UpdateBartActor.props(bartActor))
+  private val updateBartActor = system.actorOf(UpdateBartActor.props)
   private var cancellable: Option[Cancellable] = None
 
   def start(): Unit = {
