@@ -1,6 +1,6 @@
 package com.dylowen.bartpi.actor
 
-import akka.actor.{Actor, ActorRef, ActorSystem, Props}
+import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 
 import scala.collection.concurrent.TrieMap
 
@@ -12,22 +12,24 @@ import scala.collection.concurrent.TrieMap
   */
 object StatusActor extends SingletonActor {
   case object Read
-  case class Write()
+  case class Write(update: Boolean = false, error: Boolean = false)
 
-  final case class State(updateCount: Integer = 0)
+  final case class State(updateCount: Integer, apiErrors: Integer)
 
   override def props = Props(new StatusActor())
 }
-private class StatusActor extends Actor {
+private class StatusActor extends Actor with ActorLogging {
   import StatusActor._
 
   var updateCount: Integer = 0
   var apiErrors: Integer = 0
-  var state: State = State()
 
   override def receive = {
-    case Read => sender ! state
-    case Write => this.state = State(this.state.updateCount + 1)
-    case _ =>
+    case Read => sender ! State(updateCount, apiErrors)
+    case Write(true, _) =>
+      this.updateCount += 1
+    case Write(_, true) =>
+      this.apiErrors += 1
+    case error => log.error("Invalid Request: " + error)
   }
 }
