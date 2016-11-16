@@ -1,7 +1,7 @@
-package com.dylowen.bartpi
+package com.dylowen.bartpi.utils
 
 import java.io.InputStream
-import java.util.{Properties => JProperties}
+import java.util.Properties
 
 /**
   * TODO add description
@@ -9,12 +9,12 @@ import java.util.{Properties => JProperties}
   * @author dylan.owen
   * @since Nov-2016
   */
-object Properties {
+object DefaultProperties {
   private val MAIN_PROPERTY_FILE = "bart-pi.properties"
-  lazy val Main: JProperties = {
-    val inputStream: InputStream = Properties.getClass.getResourceAsStream("/" + MAIN_PROPERTY_FILE)
+  lazy val Main: Properties = {
+    val inputStream: InputStream = DefaultProperties.getClass.getResourceAsStream("/" + MAIN_PROPERTY_FILE)
     try {
-      val properties: JProperties = new JProperties()
+      val properties: Properties = new Properties()
       properties.load(inputStream)
 
       properties
