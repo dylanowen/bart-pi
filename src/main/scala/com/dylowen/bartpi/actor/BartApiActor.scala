@@ -1,19 +1,16 @@
 package com.dylowen.bartpi.actor
 
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
-import akka.http.impl.util.ObjectRegistry
 import akka.http.scaladsl.Http
+import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport._
 import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
-import com.dylowen.bartpi.EnumBuilder
-import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport._
 import com.dylowen.bartpi.api.StationDefinition
 import com.dylowen.bartpi.utils.DefaultProperties
 
-import scala.collection.mutable
-import scala.xml.{Node, NodeSeq}
+import scala.xml.NodeSeq
 
 /**
   * TODO add description

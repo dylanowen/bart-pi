@@ -38,4 +38,6 @@ class Scheduler(private implicit val system: ActorSystem) extends ApplicationLif
   def stop(): Unit = {
     this.cancellable.foreach(_.cancel())
   }
+
+  start()
 }
