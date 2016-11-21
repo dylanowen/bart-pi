@@ -1,7 +1,7 @@
 package com.dylowen.bartpi
 
 import akka.actor.ActorSystem
-import com.dylowen.bartpi.pi.Max7219
+import com.dylowen.bartpi.pi.{Max7219, ScrollingDisplay}
 import com.dylowen.bartpi.utils.{ApplicationLifecycle, Properties}
 import com.dylowen.bartpi.web.Server
 
@@ -22,9 +22,14 @@ object BartPi {
     val host: String = Properties.get("server.host")
     val port: Int = Properties.get("server.port").toInt
 
+    val max: Max7219 = new Max7219(4)
+
+    val scroller = new ScrollingDisplay(max)
+    scroller.run()
+
     // startup
     val lifecycle: Set[ApplicationLifecycle] = Set(
-      new Max7219(4)
+      max
       //new Server(host, port),
       //new Scheduler()
     )

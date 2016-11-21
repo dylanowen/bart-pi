@@ -1,6 +1,6 @@
 package com.dylowen.bartpi.pi
 
-import com.dylowen.bartpi.pi.GpioImplicits._
+import com.dylowen.bartpi.pi.Gpio._
 import com.dylowen.bartpi.utils.ApplicationLifecycle
 import com.pi4j.io.spi.{SpiChannel, SpiDevice, SpiFactory}
 
@@ -71,10 +71,6 @@ object Max7219 {
       )
     }
   }
-
-  private val LONG_BITS = java.lang.Long.SIZE
-  private val BYTE_BITS = java.lang.Byte.SIZE
-  private val BYTES_IN_LONG = LONG_BITS / BYTE_BITS
 }
 class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   import Max7219._
@@ -86,8 +82,8 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         override def write(buffer: Array[Byte]): Unit = spiInstance.write(buffer, 0, buffer.length)
       }
     }).getOrElse(DebugWriter)
-  private val MAX_X = this.chained * DISPLAY_WIDTH
-  private val MAX_Y = DISPLAY_HEIGHT
+  val MAX_X = this.chained * DISPLAY_WIDTH
+  val MAX_Y = DISPLAY_HEIGHT
 
   private val changedRows: Array[Boolean] = Array.ofDim(DISPLAY_HEIGHT)
   private val displayBuffer: Array[Byte] = Array.ofDim(this.chained * DISPLAY_HEIGHT)
@@ -103,23 +99,21 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   // default intensity
   runCommand(INTENSITY, 0x0)
 
+  /*
+  // debug display
+  setBit(0, 0)
+  setBit(0, MAX_Y - 1)
+  setBit(MAX_X - 1, 0)
+  setBit(MAX_X - 1, MAX_Y - 1)
+  flush()
+  Thread.sleep(100)
+  */
+
   clear()
   flush()
 
   println("initialized")
 
-  set("HIAL", DefaultFont8x6)
-
-  setBit(MAX_X - 1, 0)
-
-  flush()
-
-  Thread.sleep(1000)
-  for (i <- 0 until MAX_X) {
-    shiftLeft()
-    flush()
-    Thread.sleep(1000)
-  }
 
   def runCommand(command: Command, data: Int): Unit = runCommand(command, data.toByte)
 
@@ -169,9 +163,7 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   }
 
   def shiftLeft(offset: Int = 1): Unit = {
-    // byte is promoted and shifted over to give us a mask
-    val shiftMaskHigh: Int = 0x80.toByte >> (offset - 1)
-    val shiftMaskLow: Int = (2 ^ (offset - 1)) - 1
+    val shiftMask = getShiftMasks(offset)
 
     for (y <- 0 until DISPLAY_HEIGHT) {
       changedRows(y) = true
@@ -184,12 +176,42 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         val byte = (oldByte << offset) | carried
         displayBuffer(i) = byte
 
-        // get the bits we care about at the bottom
-        carried = (oldByte & shiftMaskHigh) >> (BYTE_BITS - offset)
+        // get the bits we care about at the top
+        carried = (oldByte & shiftMask._2) >> (BYTE_BITS - offset)
         // mask out the garbage up top
-        carried &= shiftMaskLow
+        carried &= shiftMask._1
       }
     }
+  }
+
+  def shiftRight(offset: Int = 1): Unit = {
+    val shiftMask = getShiftMasks(offset)
+
+    for (y <- 0 until DISPLAY_HEIGHT) {
+      changedRows(y) = true
+
+      var carried: Byte = 0x0
+      for (x <- 0 until this.chained) {
+        val i = x + y * this.chained
+
+        val oldByte = demoteByte(displayBuffer(i))
+        val byte = (oldByte >> offset) | carried
+        displayBuffer(i) = byte
+
+        // get the bits we care about at the bottom
+        carried = (oldByte & shiftMask._1) << (BYTE_BITS - offset)
+        // mask out the garbage at the bottom
+        carried &= shiftMask._2
+      }
+    }
+  }
+
+  private def getShiftMasks(offset: Int): (Int, Int) = {
+    // byte is promoted and shifted over to give us a mask
+    val shiftMaskHigh: Int = 0x80.toByte >> (offset - 1)
+    val shiftMaskLow: Int = (2 ^ (offset - 1)) - 1
+
+    (shiftMaskLow, shiftMaskHigh)
   }
 
   def flush(): Unit = {

@@ -1,6 +1,6 @@
 package com.dylowen.bartpi.pi
 
-import GpioImplicits._
+import Gpio._
 
 import scala.collection.BitSet
 
@@ -13,7 +13,7 @@ import scala.collection.BitSet
 object DefaultFont8x6 extends Font {
   override val WIDTH = 6
   override val HEIGHT = 8
-  override val CHAR_SPACING = 2
+  override val CHAR_SPACING = 1
 
   private val START_INDEX = ' '.toInt
   private val FONT: Array[BitSet] = Array(
@@ -56,20 +56,101 @@ object DefaultFont8x6 extends Font {
     ), //  ')'
     UNSUPPORTED, //  '*'
     UNSUPPORTED, //  '+'
-    UNSUPPORTED, //  ','
-    UNSUPPORTED, //  '-'
-    UNSUPPORTED, //  '.'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "  *   " +
+        " *    "
+    ), //  ','
+    stringToBitSet(
+        "      " +
+        "      " +
+        "      " +
+        " *****" +
+        " *****" +
+        "      " +
+        "      " +
+        "      "
+    ), //  '-'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        " *    "
+    ), //  '.'
     UNSUPPORTED, //  '/'
-    UNSUPPORTED, //  ' '
-    UNSUPPORTED, //  '1'
-    UNSUPPORTED, //  '2'
-    UNSUPPORTED, //  '3'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** "
+    ), //  '0'
+    stringToBitSet(
+        "  **  " +
+        " ***  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        " **** "
+    ), //  '1'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "    **" +
+        "   ** " +
+        "  **  " +
+        " **   " +
+        "**    " +
+        "******"
+    ), //  '2'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "    **" +
+        "  *** " +
+        "    **" +
+        "    **" +
+        "**  **" +
+        " **** "
+    ), //  '3'
     UNSUPPORTED, //  '4'
     UNSUPPORTED, //  '5'
     UNSUPPORTED, //  '6'
     UNSUPPORTED, //  '7'
-    UNSUPPORTED, //  '8'
-    UNSUPPORTED, //  '9'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**  **" +
+        " **** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** "
+    ), //  '8'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " *****" +
+        "    **" +
+        "**  **" +
+        " **** "
+    ), //  '9'
     UNSUPPORTED, //  ':'
     UNSUPPORTED, //  ';'
     UNSUPPORTED, //  '<'
@@ -137,7 +218,16 @@ object DefaultFont8x6 extends Font {
         "**    " +
         "**    "
     ), //  'F'
-    UNSUPPORTED, //  'G'
+    stringToBitSet(
+        " *****" +
+        "**    " +
+        "**    " +
+        "**    " +
+        "** ***" +
+        "**  **" +
+        "**  **" +
+        " *****"
+    ), //  'G'
     stringToBitSet(
         "**  **" +
         "**  **" +
@@ -158,8 +248,27 @@ object DefaultFont8x6 extends Font {
         "  **  " +
         "  **  "
     ), //  'I'
-    UNSUPPORTED, //  'J'
-    UNSUPPORTED, //  'K'
+    stringToBitSet(
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "** ** " +
+        " ***  "
+
+    ), //  'J'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        "** ** " +
+        "****  " +
+        "****  " +
+        "** ** " +
+        "**  **" +
+        "**  **"
+    ), //  'K'
     stringToBitSet(
         "**    " +
         "**    " +
@@ -167,16 +276,79 @@ object DefaultFont8x6 extends Font {
         "**    " +
         "**    " +
         "**    " +
-        "**    " +
+        "******" +
         "******"
     ), //  'L'
-    UNSUPPORTED, //  'M'
-    UNSUPPORTED, //  'N'
-    UNSUPPORTED, //  'O'
-    UNSUPPORTED, //  'P'
-    UNSUPPORTED, //  'Q'
-    UNSUPPORTED, //  'R'
-    UNSUPPORTED, //  'S'
+    stringToBitSet(
+        "***  *" +
+        "******" +
+        "** * *" +
+        "**   *" +
+        "**   *" +
+        "**   *" +
+        "**   *" +
+        "**   *"
+    ), //  'M'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        "*** **" +
+        "*** **" +
+        "** ***" +
+        "** ***" +
+        "**  **" +
+        "**  **"
+    ), //  'N'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** "
+    ), //  'O'
+    stringToBitSet(
+        "***** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "***** " +
+        "**    " +
+        "**    " +
+        "**    "
+    ), //  'P'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  * " +
+        " *** *"
+    ), //  'Q'
+    stringToBitSet(
+        "***** " +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "***** " +
+        "** ** " +
+        "**  **" +
+        "**  **"
+    ), //  'R'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**    " +
+        "***** " +
+        " *****" +
+        "    **" +
+        "**  **" +
+        " **** "
+    ), //  'S'
     stringToBitSet(
         "******" +
         "******" +
@@ -187,17 +359,98 @@ object DefaultFont8x6 extends Font {
         "  **  " +
         "  **  "
     ), //  'T'
-    UNSUPPORTED, //  'U'
-    UNSUPPORTED, //  'V'
-    UNSUPPORTED, //  'W'
-    UNSUPPORTED, //  'X'
-    UNSUPPORTED, //  'Y'
-    UNSUPPORTED, //  'Z'
-    UNSUPPORTED, //  '['
-    UNSUPPORTED, //  backslash
-    UNSUPPORTED, //  ']'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** "
+    ), //  'U'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** " +
+        "  **  "
+    ), //  'V'
+    stringToBitSet(
+        "**   *" +
+        "**   *" +
+        "**   *" +
+        "**   *" +
+        "** * *" +
+        "******" +
+        "*** **" +
+        "**   *"
+    ), //  'W'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        " **** " +
+        "  **  " +
+        "  **  " +
+        " **** " +
+        "**  **" +
+        "**  **"
+    ), //  'X'
+    stringToBitSet(
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        "**  **" +
+        " **** " +
+        "  **  " +
+        "  **  " +
+        "  **  "
+    ), //  'Y'
+    stringToBitSet(
+        "******" +
+        "******" +
+        "    **" +
+        "   ** " +
+        "  **  " +
+        " **   " +
+        "******" +
+        "******"
+    ), //  'Z'
+    stringToBitSet(
+        "***   " +
+        "*     " +
+        "*     " +
+        "*     " +
+        "*     " +
+        "*     " +
+        "*     " +
+        "***   "
+    ), //  '['
+    UNSUPPORTED, //  '/'
+    stringToBitSet(
+        "   ***" +
+        "     *" +
+        "     *" +
+        "     *" +
+        "     *" +
+        "     *" +
+        "     *" +
+        "   ***"
+    ), //  ']'
     UNSUPPORTED, //  '^'
-    UNSUPPORTED, //  '_'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "      " +
+        "******"
+    ), //  '_'
     UNSUPPORTED, //  '`'
     UNSUPPORTED, //  'a'
     UNSUPPORTED, //  'b'
@@ -207,10 +460,37 @@ object DefaultFont8x6 extends Font {
     UNSUPPORTED, //  'f'
     UNSUPPORTED, //  'g'
     UNSUPPORTED, //  'h'
-    UNSUPPORTED, //  'i'
-    UNSUPPORTED, //  'j'
+    stringToBitSet(
+        "      " +
+        "  **  " +
+        "      " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  "
+    ), //  'i'
+    stringToBitSet(
+        "      " +
+        "   ** " +
+        "      " +
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "   ** " +
+        "  **  "
+    ), //  'j'
     UNSUPPORTED, //  'k'
-    UNSUPPORTED, //  'l'
+    stringToBitSet(
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  "
+    ), //  'l'
     UNSUPPORTED, //  'm'
     UNSUPPORTED, //  'n'
     UNSUPPORTED, //  'o'
@@ -230,27 +510,45 @@ object DefaultFont8x6 extends Font {
         "  **  " +
         "  **  " +
         " ***  " +
-        " ***  " +
+        "  **  " +
         "  **  " +
         "  **  " +
         "   ** "
     ), //  '{'
-    UNSUPPORTED, //  '|'
+    stringToBitSet(
+        "  *   " +
+        "  *   " +
+        "  *   " +
+        "  *   " +
+        "  *   " +
+        "  *   " +
+        "  *   " +
+        "  *   "
+    ), //  '|'
     stringToBitSet(
         " **   " +
         "  **  " +
         "  **  " +
         "  *** " +
-        "  *** " +
+        "  **  " +
         "  **  " +
         "  **  " +
         " **   "
     ), //  '}'
-    UNSUPPORTED //  '~'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "      " +
+        " ** **" +
+        "** ** " +
+        "      " +
+        "      " +
+        "      "
+    ) //  '~'
   )
 
   override def get(char: Char): BitSet = {
-    if (char >= START_INDEX && char <= FONT.length) {
+    if (char >= START_INDEX && char < FONT.length + START_INDEX) {
       FONT(char - START_INDEX)
     }
     else {
