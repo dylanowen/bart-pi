@@ -34,7 +34,7 @@ object Lines extends EnumBuilder[Line] with RegexParsers {
   private def comma = "," ^^ (_ => Comma)
 
   private def tokens: Parser[List[Line]] = {
-    phrase(rep1(lineParser | comma)) ^^ {
+    phrase(rep1(lineParser, lineParser | comma)) ^^ {
       tokens => tokens.flatMap({ //filter out the tokens we don't care about
         case line: Line => Some(line)
         case _ => None

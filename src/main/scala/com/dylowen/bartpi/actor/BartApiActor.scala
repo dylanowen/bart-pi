@@ -7,8 +7,8 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model._
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
-import com.dylowen.bartpi.api.StationDefinition
-import com.dylowen.bartpi.utils.DefaultProperties
+import com.dylowen.bartpi.api._
+import com.dylowen.bartpi.utils.Properties
 
 import scala.xml.NodeSeq
 
@@ -20,7 +20,6 @@ import scala.xml.NodeSeq
   */
 class BartApiActor extends Actor with ActorLogging {
   import BartApiActor._
-  import akka.pattern.pipe
   import context.dispatcher
 
   private implicit val system: ActorSystem = context.system
@@ -29,27 +28,37 @@ class BartApiActor extends Actor with ActorLogging {
   private val http = Http(context.system)
 
   override def receive = {
-    case Departure(station) =>
-      http.singleRequest(buildDeparturesRequest(station)).pipeTo(self)
-    case HttpResponse(StatusCodes.OK, _, entity, _) =>
-      Unmarshal(entity).to[NodeSeq].map((node) => {
-        if (!findError(node)) {
-          handleDeaparturesResponse(node)
-        }
+    // if we receive an empty departure message fill in the defaults
+    case Departure(None, _) =>
+      val station: StationDefinition = StationDefinitions.getByString(Properties.get("bart.station")).getOrElse(StationDefinitions.`12TH`)
+      val direction: Option[Direction] = Directions.getByString(Properties.get("bart.direction"))
+
+      receive(Departure(Some(station), direction))
+    case Departure(station, direction) =>
+      // we know we've already matched on empty stations so always grab the value
+      http.singleRequest(buildDeparturesRequest(station.get, direction)).map({
+        case HttpResponse(StatusCodes.OK, _, entity, _) =>
+          Unmarshal(entity).to[NodeSeq].map((node) => {
+            if (!findError(node)) {
+              handleDeaparturesResponse(node)
+            }
+          })
+        case HttpResponse(code, _, _, _) =>
+          handleError("Request failed, response code: " + code)
       })
-    case HttpResponse(code, _, _, _) =>
-      handleError("Request failed, response code: " + code)
     case _ =>
       handleError("Invalid request")
   }
 
-  private def buildDeparturesRequest(origin: StationDefinition): HttpRequest = {
-    buildRequest("etd", Query("cmd" -> "etd", "orig" -> origin.abbr))
+  private def buildDeparturesRequest(origin: StationDefinition, direction: Option[Direction] = None): HttpRequest = {
+    var query: Query = Query("cmd" -> "etd", "orig" -> origin.abbr)
+    direction.foreach(dir => query = query.+:("dir", dir.abbr))
+
+    buildRequest("etd", query)
   }
 
   private def handleDeaparturesResponse(node: NodeSeq): Unit = {
-    val stations = node \ "station"
-
+    val etd: ETD = ETD(node)
 
     bartActor ! StatusActor.Write(update = true)
   }
@@ -84,10 +93,11 @@ class BartApiActor extends Actor with ActorLogging {
 }
 
 object BartApiActor {
-  private val BART_HOST: String = DefaultProperties.Main.getProperty("bart.api.host")
-  private val BART_KEY: String = DefaultProperties.Main.getProperty("bart.api.key")
+  private val BART_HOST: String = Properties.get("bart.api.host")
+  private val BART_KEY: String = Properties.get("bart.api.key")
 
-  case class Departure(station: StationDefinition)
+  case class Departure(station: Option[StationDefinition] = None, direction: Option[Direction] = None)
 
   def props: Props = Props(new BartApiActor())
 }
+

@@ -1,2 +1,7 @@
+server.host=localhost
+server.port=8080
 bart.api.host=http://api.bart.gov/api/
-bart.api.key=
+bart.api.key=Find a key here: http://api.bart.gov/api/register.aspx
+bart.station=12th
+bart.lines=RED,YELLOW
+bart.direction=SOUTH

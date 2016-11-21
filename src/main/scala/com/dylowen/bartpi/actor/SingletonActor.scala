@@ -14,7 +14,7 @@ trait SingletonActor {
   private val singletonMap: TrieMap[ActorSystem, ActorRef] = new TrieMap()
   def get(implicit system: ActorSystem): ActorRef = {
     this.singletonMap.getOrElseUpdate(system, {
-      system.actorOf(props)
+      system.actorOf(props, this.getClass.getName)
     })
   }
   protected def props: Props

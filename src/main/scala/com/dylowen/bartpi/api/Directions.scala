@@ -8,14 +8,12 @@ import com.dylowen.bartpi.utils.EnumBuilder
   * @author dylan.owen
   * @since Nov-2016
   */
-class Direction(val name: String)
+class Direction(val name: String, val abbr: String)
 object Directions extends EnumBuilder[Direction] {
   private def register(direction: Direction): Direction = register(direction.name, direction)
 
-  val NORTH = register(new Direction("NORTH"))
-  val EAST = register(new Direction("EAST"))
-  val SOUTH = register(new Direction("SOUTH"))
-  val WEST = register(new Direction("WEST"))
+  val NORTH = register(new Direction("NORTH", "n"))
+  val SOUTH = register(new Direction("SOUTH", "s"))
 
   build()
 }
