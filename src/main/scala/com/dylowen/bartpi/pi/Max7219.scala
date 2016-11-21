@@ -64,10 +64,9 @@ object Max7219 {
         .filter(_._2 % 2 == 1) // filter out the registers
         .map(_._1)
         .map((byte: Byte) => {
-          // TODO definitely a bug here
-          Integer.toBinaryString(byte + 0x100).substring(1).replace('0', '_').replace('1', '*')
+          Integer.toBinaryString(demoteByte(byte) + 0x100).substring(1).replace('0', ' ').replace('1', '*')
         })
-        .mkString(" ")
+        .mkString("")
       )
     }
   }
@@ -145,12 +144,15 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
 
   def setBit(x: Int, y: Int, value: Boolean = true): Unit = {
     if (x >= 0 && y >= 0 && x < MAX_X && y < MAX_Y) {
+      // mark this row as having changed
       changedRows(y) = true
 
       // transpose the bits to display nicely on our screen
       val bitIndex: Int = (BYTE_BITS - 1) - (x % BYTE_BITS)
+      // get the index of our real byte
       val byteIndex: Int = x / BYTE_BITS + y * this.chained
       val oldByte: Byte = displayBuffer(byteIndex)
+      // OR or AND depending on if we're setting or clearing
       val newByte: Byte = if (value) {
         oldByte | (0x1 << bitIndex)
       }
