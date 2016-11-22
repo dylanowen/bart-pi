@@ -54,35 +54,16 @@ object Max7219 {
 
   val DISPLAY_WIDTH: Int = 8
   val DISPLAY_HEIGHT: Int = 8
-
-  trait SpiWriter {
-    def write(buffer: Array[Byte]): Unit
-  }
-  private val DebugWriter = new SpiWriter {
-    override def write(buffer: Array[Byte]): Unit = {
-      println(buffer.zipWithIndex
-        .filter(_._2 % 2 == 1) // filter out the registers
-        .map(_._1)
-        .map((byte: Byte) => {
-          Integer.toBinaryString(demoteByte(byte) + 0x100).substring(1).replace('0', ' ').replace('1', '*')
-        })
-        .mkString("")
-      )
-    }
-  }
 }
 class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   import Max7219._
 
-  // wrap a SPI writer for local debugging
-  private val spi: SpiWriter = Try(SpiFactory.getInstance(SpiChannel.CS0, 10.asMhz, SpiDevice.DEFAULT_SPI_MODE))
-    .map((spiInstance) => {
-      new SpiWriter {
-        override def write(buffer: Array[Byte]): Unit = spiInstance.write(buffer, 0, buffer.length)
-      }
-    }).getOrElse(DebugWriter)
-  val MAX_X = this.chained * DISPLAY_WIDTH
-  val MAX_Y = DISPLAY_HEIGHT
+  val MAX_X: Int = this.chained * DISPLAY_WIDTH
+  val MAX_Y: Int = DISPLAY_HEIGHT
+
+  private val spi: Max7219Device = Max7219Device.get(() => {
+    SpiFactory.getInstance(SpiChannel.CS0, 10.asMhz, SpiDevice.DEFAULT_SPI_MODE)
+  }, chained)
 
   private val changedRows: Array[Boolean] = Array.ofDim(DISPLAY_HEIGHT)
   private val displayBuffer: Array[Byte] = Array.ofDim(this.chained * DISPLAY_HEIGHT)

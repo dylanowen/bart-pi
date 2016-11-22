@@ -154,7 +154,16 @@ object DefaultFont8x6 extends Font {
     UNSUPPORTED, //  ':'
     UNSUPPORTED, //  ';'
     UNSUPPORTED, //  '<'
-    UNSUPPORTED, //  '='
+    stringToBitSet(
+        "      " +
+        "      " +
+        " **** " +
+        "      " +
+        " **** " +
+        "      " +
+        "      " +
+        "      "
+    ), //  '='
     UNSUPPORTED, //  '>'
     UNSUPPORTED, //  '?'
     UNSUPPORTED, //  '@'
@@ -546,6 +555,19 @@ object DefaultFont8x6 extends Font {
         "      "
     ) //  '~'
   )
+
+  /*
+  val ALIEN: BitSet = stringToBitSet(
+      " ***** " +
+      "*     *" +
+      "* * * *" +
+      "* * * *" +
+      "*     *" +
+      " * ** *" +
+      "  *  * " +
+      "   **  "
+  )
+  */
 
   override def get(char: Char): BitSet = {
     if (char >= START_INDEX && char < FONT.length + START_INDEX) {
