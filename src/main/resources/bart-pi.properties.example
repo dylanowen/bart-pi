@@ -5,3 +5,4 @@ bart.api.key=Find a key here: http://api.bart.gov/api/register.aspx
 bart.station=12th
 bart.lines=RED,YELLOW
 bart.direction=SOUTH
+bart.time.threshold=5
