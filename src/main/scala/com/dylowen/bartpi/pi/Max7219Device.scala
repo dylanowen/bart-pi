@@ -1,11 +1,10 @@
 package com.dylowen.bartpi.pi
 
-import java.awt.{Color, Graphics, Graphics2D}
-import java.io.IOException
+import java.awt.{Color, Graphics}
 import javax.swing.{JFrame, JPanel}
 
-import com.dylowen.bartpi.pi.Max7219
-import com.pi4j.io.spi.SpiDevice
+import com.dylowen.bartpi.pi.Gpio._
+import com.pi4j.io.spi.{SpiChannel, SpiDevice, SpiFactory}
 
 /**
   * TODO add description
@@ -14,10 +13,10 @@ import com.pi4j.io.spi.SpiDevice
   * @since Nov-2016
   */
 object Max7219Device {
-  def get(deviceGetter: () => SpiDevice, chained: Int = 1): Max7219Device = {
+  def get(channel: SpiChannel, chained: Int = 1): Max7219Device = {
     // try to get the real device, and fall back to a fake one for debugging
     try {
-      val device: SpiDevice = deviceGetter()
+      val device: SpiDevice = SpiFactory.getInstance(channel, 10.asMhz, SpiDevice.DEFAULT_SPI_MODE)
 
       new Max7219Device {
         override def write(buffer: Array[Byte]): Unit = device.write(buffer, 0, buffer.length)
@@ -36,8 +35,6 @@ trait Max7219Device {
 
 object Max7219Simulator {
   val PIXEL_SZE: Int = 25
-
-
 }
 class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
   val HEIGHT: Int = Max7219.DISPLAY_HEIGHT * Max7219Simulator.PIXEL_SZE
@@ -50,7 +47,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
   window.add(drawingPanel)
 
   // pad the output so it'll all showup on the screen
-  window.setSize(WIDTH + Max7219Simulator.PIXEL_SZE, HEIGHT + Max7219Simulator.PIXEL_SZE)
+  window.setSize(WIDTH, HEIGHT + Max7219Simulator.PIXEL_SZE)
   window.setVisible(true)
 
   override def write(buffer: Array[Byte]): Unit = {
@@ -68,7 +65,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
       for (i <- 0 to 7) {
         val x = (col * Max7219.DISPLAY_WIDTH) + i
         val y = rowIndex
-        val on: Boolean = (buffer(col) >> (Gpio.BYTE_BITS - i) & 0x1) == 1
+        val on: Boolean = (buffer(col) >> (Gpio.BYTE_BITS - 1 - i) & 0x1) == 1
 
         this.drawingPanel.drawMatrix(x)(y) = on
       }
@@ -88,6 +85,9 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
     val drawMatrix: Array[Array[Boolean]] = Array.ofDim(Max7219.DISPLAY_WIDTH * chained, Max7219.DISPLAY_HEIGHT)
 
     override def paintComponent(g: Graphics): Unit = {
+      g.setColor(Color.BLACK)
+      g.fillRect(0, 0, getWidth, getHeight)
+
       for (i <- this.drawMatrix.indices) {
         for (j <- this.drawMatrix(i).indices) {
           val on: Boolean = this.drawMatrix(i)(j)
@@ -96,11 +96,8 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
 
           if (on) {
             g.setColor(Color.RED)
+            g.fillOval(x, y, Max7219Simulator.PIXEL_SZE, Max7219Simulator.PIXEL_SZE)
           }
-          else {
-            g.setColor(Color.BLACK)
-          }
-          g.fillOval(x, y, Max7219Simulator.PIXEL_SZE, Max7219Simulator.PIXEL_SZE)
         }
       }
     }

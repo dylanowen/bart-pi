@@ -61,9 +61,7 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   val MAX_X: Int = this.chained * DISPLAY_WIDTH
   val MAX_Y: Int = DISPLAY_HEIGHT
 
-  private val spi: Max7219Device = Max7219Device.get(() => {
-    SpiFactory.getInstance(SpiChannel.CS0, 10.asMhz, SpiDevice.DEFAULT_SPI_MODE)
-  }, chained)
+  private val spi: Max7219Device = Max7219Device.get(SpiChannel.CS0, chained)
 
   private val changedRows: Array[Boolean] = Array.ofDim(DISPLAY_HEIGHT)
   private val displayBuffer: Array[Byte] = Array.ofDim(this.chained * DISPLAY_HEIGHT)
