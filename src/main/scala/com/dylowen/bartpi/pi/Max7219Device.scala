@@ -34,11 +34,12 @@ trait Max7219Device {
 
 
 object Max7219Simulator {
-  val PIXEL_SZE: Int = 25
+  val CELL_SIZE: Int = 25
+  val LED_SIZE: Int = 20
 }
 class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
-  val HEIGHT: Int = Max7219.DISPLAY_HEIGHT * Max7219Simulator.PIXEL_SZE
-  val WIDTH: Int = Max7219.DISPLAY_WIDTH * Max7219Simulator.PIXEL_SZE * this.chained
+  val HEIGHT: Int = Max7219.DISPLAY_HEIGHT * Max7219Simulator.CELL_SIZE
+  val WIDTH: Int = Max7219.DISPLAY_WIDTH * Max7219Simulator.CELL_SIZE * this.chained
 
   private val window: JFrame = new JFrame()
   window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
@@ -47,16 +48,24 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
   window.add(drawingPanel)
 
   // pad the output so it'll all showup on the screen
-  window.setSize(WIDTH, HEIGHT + Max7219Simulator.PIXEL_SZE)
+  window.setSize(WIDTH, HEIGHT + Max7219Simulator.CELL_SIZE)
   window.setVisible(true)
 
   override def write(buffer: Array[Byte]): Unit = {
-    if (buffer.size == this.chained * 2) {
-      val command: Max7219.Command = getCommand(buffer(0))
-      val rowIndex: Int = getDigitRow(command)
-      if (rowIndex != -1) {
-        renderRow(rowIndex, buffer.zipWithIndex.filter(_._2 % 2 == 1).map(_._1))
-      }
+    val command: Max7219.Command = getCommand(buffer(0))
+    val rowIndex: Int = getDigitRow(command)
+
+    if (rowIndex != -1 && buffer.length == this.chained * 2) {
+      renderRow(rowIndex, buffer.zipWithIndex.filter(_._2 % 2 == 1).map(_._1))
+    }
+    else {
+      // we're not doing a graphical operation so just print the hex
+      println(buffer
+        .map((byte: Byte) => {
+          "0x" + Integer.toHexString(demoteByte(byte) + 0x100).substring(1)
+        })
+        .mkString(" ")
+      )
     }
   }
 
@@ -91,12 +100,12 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
       for (i <- this.drawMatrix.indices) {
         for (j <- this.drawMatrix(i).indices) {
           val on: Boolean = this.drawMatrix(i)(j)
-          val x = i * Max7219Simulator.PIXEL_SZE
-          val y = j * Max7219Simulator.PIXEL_SZE
+          val x = i * Max7219Simulator.CELL_SIZE
+          val y = j * Max7219Simulator.CELL_SIZE
 
           if (on) {
             g.setColor(Color.RED)
-            g.fillOval(x, y, Max7219Simulator.PIXEL_SZE, Max7219Simulator.PIXEL_SZE)
+            g.fillOval(x, y, Max7219Simulator.LED_SIZE, Max7219Simulator.LED_SIZE)
           }
         }
       }
