@@ -52,8 +52,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
   window.setVisible(true)
 
   override def write(buffer: Array[Byte]): Unit = {
-    val command: Max7219.Command = getCommand(buffer(0))
-    val rowIndex: Int = getDigitRow(command)
+    val rowIndex: Int = getDigitRow(buffer(0))
 
     if (rowIndex != -1 && buffer.length == this.chained * 2) {
       renderRow(rowIndex, buffer.zipWithIndex.filter(_._2 % 2 == 1).map(_._1))
@@ -83,12 +82,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
     this.drawingPanel.repaint()
   }
 
-  private def getCommand(byte: Byte): Max7219.Command = {
-    // we don't support anything besdies the digits for this simulator
-    Max7219.DIGITS.find(_.register == byte).getOrElse(Max7219.NOOP)
-  }
-
-  private def getDigitRow(command: Max7219.Command): Int = Max7219.DIGITS.indexOf(command)
+  private def getDigitRow(byte: Byte): Int = Max7219.DIGITS.indexOf(Max7219.DIGITS.find(_.register == byte).getOrElse(Max7219.NOOP))
 
   private class DrawingPanel() extends JPanel {
     val drawMatrix: Array[Array[Boolean]] = Array.ofDim(Max7219.DISPLAY_WIDTH * chained, Max7219.DISPLAY_HEIGHT)

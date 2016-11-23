@@ -1,5 +1,8 @@
 package com.dylowen.bartpi.actor
 
+import java.time.Instant
+import java.time.temporal.ChronoUnit
+
 import akka.actor.{Actor, ActorLogging, ActorRef, ActorSystem, Props}
 import akka.http.scaladsl.Http
 import akka.http.scaladsl.marshallers.xml.ScalaXmlSupport._
@@ -24,23 +27,21 @@ class BartApiActor extends Actor with ActorLogging {
 
   private implicit val system: ActorSystem = context.system
   private implicit val materializer: ActorMaterializer = ActorMaterializer(ActorMaterializerSettings(context.system))
-  private val bartActor: ActorRef = StatusActor.get
+  private val statusActor: ActorRef = StatusActor.get
+  private val displayActor: ActorRef = ScrollingDisplayActor.get
   private val http = Http(context.system)
 
-  override def receive = {
+  override def receive: Actor.Receive = {
     // if we receive an empty departure message fill in the defaults
-    case Departure(None, _) =>
+    case Departure =>
       val station: StationDefinition = StationDefinitions.getByString(Properties.get("bart.station")).getOrElse(StationDefinitions.`12TH`)
       val direction: Option[Direction] = Directions.getByString(Properties.get("bart.direction"))
 
-      receive(Departure(Some(station), direction))
-    case Departure(station, direction) =>
-      // we know we've already matched on empty stations so always grab the value
-      http.singleRequest(buildDeparturesRequest(station.get, direction)).map({
+      http.singleRequest(buildDeparturesRequest(station, direction)).map({
         case HttpResponse(StatusCodes.OK, _, entity, _) =>
           Unmarshal(entity).to[NodeSeq].map((node) => {
             if (!findError(node)) {
-              handleDeaparturesResponse(node)
+              handleDeparturesResponse(node)
             }
           })
         case HttpResponse(code, _, _, _) =>
@@ -57,10 +58,36 @@ class BartApiActor extends Actor with ActorLogging {
     buildRequest("etd", query)
   }
 
-  private def handleDeaparturesResponse(node: NodeSeq): Unit = {
-    val etd: ETD = ETD(node)
+  private def handleDeparturesResponse(node: NodeSeq): Unit = {
+    // TODO this parsing / error handling is terrible
+    val lines: Set[Line] = Lines.parseLines(Properties.get("bart.lines")) match {
+      case Right(parsedLines) => parsedLines
+      case Left(error) =>
+        log.error(error.message)
+        Set.empty
+      }
+    val direction: Direction = Directions.getByString(Properties.get("bart.direction")).get
+    val timeThreshold: Int = Properties.get("bart.time.threshold").toInt
 
-    bartActor ! StatusActor.Write(update = true)
+    // filter our departures
+    val departures: Seq[StationDeparture] = ETD(node).departures
+      .filter(_.estimates.nonEmpty)
+      .filter(_.estimates.head.direction == direction)
+      .filter(departure => lines.contains(departure.estimates.head.line))
+
+    val message = departures.map(departure => {
+      val now = Instant.now()
+      val nextEstimate = departure.estimates
+        .filter(_.departureTime.minus(timeThreshold, ChronoUnit.MINUTES).compareTo(now) > 0)
+        .sortBy(_.departureTime)
+        .head
+
+      departure.destination.abbr + ":" + now.until(nextEstimate.departureTime, ChronoUnit.MINUTES)
+    }).mkString(" ")
+
+    displayActor ! ScrollingDisplayActor.DisplayMessage(message)
+
+    statusActor ! StatusActor.Write(update = true)
   }
 
   private def buildRequest(path: String, query: Query = Query.Empty): HttpRequest = {
@@ -87,7 +114,7 @@ class BartApiActor extends Actor with ActorLogging {
 
   private def handleError(errorMessage: String): Unit = {
     // tell our status to track an error
-    bartActor ! StatusActor.Write(error = true)
+    statusActor ! StatusActor.Write(error = true)
     log.error(errorMessage)
   }
 }
@@ -96,7 +123,7 @@ object BartApiActor {
   private val BART_HOST: String = Properties.get("bart.api.host")
   private val BART_KEY: String = Properties.get("bart.api.key")
 
-  case class Departure(station: Option[StationDefinition] = None, direction: Option[Direction] = None)
+  case object Departure
 
   def props: Props = Props(new BartApiActor())
 }

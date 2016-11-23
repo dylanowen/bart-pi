@@ -127,10 +127,46 @@ object DefaultFont8x6 extends Font {
         "**  **" +
         " **** "
     ), //  '3'
-    UNSUPPORTED, //  '4'
-    UNSUPPORTED, //  '5'
-    UNSUPPORTED, //  '6'
-    UNSUPPORTED, //  '7'
+    stringToBitSet(
+        "   ** " +
+        "  **  " +
+        " **   " +
+        "**    " +
+        "** ** " +
+        "******" +
+        "   ** " +
+        "   ** "
+    ), //  '4'
+    stringToBitSet(
+        "******" +
+        "**    " +
+        "**    " +
+        " **** " +
+        "    **" +
+        "    **" +
+        "**  **" +
+        " **** "
+    ), //  '5'
+    stringToBitSet(
+        " **** " +
+        "**  **" +
+        "**    " +
+        "**    " +
+        "***** " +
+        "**  **" +
+        "**  **" +
+        " **** "
+    ), //  '6'
+    stringToBitSet(
+        "******" +
+        "    **" +
+        "    **" +
+        "   ** " +
+        "  **  " +
+        "  **  " +
+        "  **  " +
+        "  **  "
+    ), //  '7'
     stringToBitSet(
         " **** " +
         "**  **" +
@@ -151,8 +187,26 @@ object DefaultFont8x6 extends Font {
         "**  **" +
         " **** "
     ), //  '9'
-    UNSUPPORTED, //  ':'
-    UNSUPPORTED, //  ';'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "  *   " +
+        "      " +
+        "      " +
+        "      " +
+        "  *   " +
+        "      "
+    ), //  ':'
+    stringToBitSet(
+        "      " +
+        "      " +
+        "  *   " +
+        "      " +
+        "      " +
+        "      " +
+        "  *   " +
+        " *    "
+    ), //  ';'
     UNSUPPORTED, //  '<'
     stringToBitSet(
         "      " +
