@@ -9,18 +9,18 @@ import scala.collection.BitSet
   * @since Nov-2016
   */
 trait Font {
-  val WIDTH: Int
-  val HEIGHT: Int
-  val CHAR_SPACING: Int
+  val DEFAULT_WIDTH: Int
+  val DEFAULT_HEIGHT: Int
+  val SPACING: Int
 
-  def get(char: Char): BitSet
-  def get(string: String): Array[BitSet] = string.map(get).toArray
+  def get(char: Char): Glyph
+  def get(string: String): Array[Glyph] = string.map(get).toArray
 
   // use filled space for unsupported
-  protected lazy val UNSUPPORTED: BitSet = stringToBitSet("*" * WIDTH * HEIGHT)
+  protected lazy val UNSUPPORTED: Glyph = stringToGlyph("*" * DEFAULT_WIDTH * DEFAULT_HEIGHT)
 
-  protected def stringToBitSet(rawString: String): BitSet = {
-    assert(rawString.length == WIDTH * HEIGHT)
+  protected def stringToGlyph(rawString: String, width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT): Glyph = {
+    assert(rawString.length == width * height)
     val builder = BitSet.newBuilder
     builder.sizeHint(rawString.length)
 
@@ -30,6 +30,7 @@ trait Font {
       }
     }
 
-    builder.result()
+    Glyph(builder.result(), width, height)
   }
 }
+case class Glyph(bits: BitSet, width: Int, height: Int)

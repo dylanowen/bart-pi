@@ -69,23 +69,28 @@ class BartApiActor extends Actor with ActorLogging {
     val direction: Direction = Directions.getByString(Properties.get("bart.direction")).get
     val timeThreshold: Int = Properties.get("bart.time.threshold").toInt
 
+    //TODO this breaks with no data (in the middle of the night)
     // filter our departures
     val departures: Seq[StationDeparture] = ETD(node).departures
       .filter(_.estimates.nonEmpty)
       .filter(_.estimates.head.direction == direction)
       .filter(departure => lines.contains(departure.estimates.head.line))
 
+    val now = Instant.now()
     val message = departures.map(departure => {
-      val now = Instant.now()
-      val nextEstimate = departure.estimates
-        .filter(_.departureTime.minus(timeThreshold, ChronoUnit.MINUTES).compareTo(now) > 0)
-        .sortBy(_.departureTime)
-        .head
+        departure.estimates
+          .filter(_.departureTime.minus(timeThreshold, ChronoUnit.MINUTES).compareTo(now) > 0)
+          .sortBy(_.departureTime)
+          .headOption
+          .map(estimate => (estimate.departureTime, departure.destination.abbr))
+      })
+      .filter(_.isDefined)
+      .map(_.get)
+      .sortBy(_._1)
+      .map({ case (time, station) => station + ":" + now.until(time, ChronoUnit.MINUTES) })
+      .mkString(" ")
 
-      departure.destination.abbr + ":" + now.until(nextEstimate.departureTime, ChronoUnit.MINUTES)
-    }).mkString(" ")
-
-    displayActor ! ScrollingDisplayActor.DisplayMessage(message)
+    displayActor ! ScrollingDisplayActor.DisplayMessage(message, repeat = true)
 
     statusActor ! StatusActor.Write(update = true)
   }

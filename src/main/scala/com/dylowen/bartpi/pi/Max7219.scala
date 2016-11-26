@@ -105,12 +105,16 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   }
 
   def set(string: String, font: Font, x: Int = 0, y: Int = 0): Unit = {
+    var offset: Int = x
     for (i <- string.indices) {
-      set(string(i), font, x + i * (font.WIDTH + font.CHAR_SPACING), y)
+      val glyph: Glyph = font.get(string(i))
+      set(glyph, offset, y)
+
+      offset += glyph.width + font.SPACING
     }
   }
 
-  def set(char: Char, font: Font, x: Int, y: Int): Unit = set(font.get(char), font.WIDTH, font.HEIGHT, x, y)
+  def set(char: Glyph, x: Int, y: Int): Unit = set(char.bits, char.width, char.height, x, y)
 
   def set(input: BitSet, width: Int, height: Int, x: Int, y: Int): Unit = {
     for (inX <- 0 until width) {
@@ -143,8 +147,8 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
     }
   }
 
-  def shiftLeft(offset: Int = 1): Unit = {
-    val shiftMask = getShiftMasks(offset)
+  def shiftLeft(): Unit = {
+    val shiftMask = getShiftMasks(1)
 
     for (y <- 0 until DISPLAY_HEIGHT) {
       changedRows(y) = true
@@ -154,19 +158,19 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         val i = x + y * this.chained
 
         val oldByte = displayBuffer(i)
-        val byte = (oldByte << offset) | carried
+        val byte = (oldByte << 1) | carried
         displayBuffer(i) = byte
 
         // get the bits we care about at the top
-        carried = (oldByte & shiftMask._2) >> (BYTE_BITS - offset)
+        carried = (oldByte & shiftMask._2) >> (BYTE_BITS - 1)
         // mask out the garbage up top
         carried &= shiftMask._1
       }
     }
   }
 
-  def shiftRight(offset: Int = 1): Unit = {
-    val shiftMask = getShiftMasks(offset)
+  def shiftRight(): Unit = {
+    val shiftMask = getShiftMasks(1)
 
     for (y <- 0 until DISPLAY_HEIGHT) {
       changedRows(y) = true
@@ -176,11 +180,11 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         val i = x + y * this.chained
 
         val oldByte = demoteByte(displayBuffer(i))
-        val byte = (oldByte >> offset) | carried
+        val byte = (oldByte >> 1) | carried
         displayBuffer(i) = byte
 
         // get the bits we care about at the bottom
-        carried = (oldByte & shiftMask._1) << (BYTE_BITS - offset)
+        carried = (oldByte & shiftMask._1) << (BYTE_BITS - 1)
         // mask out the garbage at the bottom
         carried &= shiftMask._2
       }
@@ -193,6 +197,25 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
     val shiftMaskLow: Int = (2 ^ (offset - 1)) - 1
 
     (shiftMaskLow, shiftMaskHigh)
+  }
+
+  def shiftDown(): Unit = shiftY(0 until DISPLAY_HEIGHT)
+
+  def shiftUp(): Unit = shiftY(DISPLAY_HEIGHT - 1 to 0 by -1)
+
+  private def shiftY(indices: Range): Unit = {
+    val carried: Array[Byte] = Array.ofDim(this.chained)
+    for (y <- indices) {
+      changedRows(y) = true
+
+      for (x <- 0 until this.chained) {
+        val i: Int = x + y * this.chained
+        val temp: Byte = displayBuffer(i)
+
+        displayBuffer(i) = carried(x)
+        carried(x) = temp
+      }
+    }
   }
 
   def flush(): Unit = {

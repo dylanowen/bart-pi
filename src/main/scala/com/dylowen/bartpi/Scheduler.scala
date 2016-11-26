@@ -15,8 +15,8 @@ import scala.concurrent.duration.Duration
   * @since Nov-2016
   */
 object Scheduler {
-  val BART_UPDATE_FREQUENCY = 30
-  val DISPLAY_TICK = 75
+  val BART_UPDATE_S = 30
+  val DISPLAY_TICK_MS = 75
 }
 class Scheduler()(private implicit val system: ActorSystem) extends ApplicationLifecycle {
 
@@ -33,13 +33,13 @@ class Scheduler()(private implicit val system: ActorSystem) extends ApplicationL
     stop()
     this.bartUpdater = Some(this.system.scheduler.schedule(
       Duration.Zero,
-      Duration.create(BART_UPDATE_FREQUENCY, TimeUnit.SECONDS),
+      Duration.create(BART_UPDATE_S, TimeUnit.SECONDS),
       updateBartActor,
       BartApiActor.Departure
     ))
     this.screenUpdater = Some(this.system.scheduler.schedule(
       Duration.Zero,
-      Duration.create(DISPLAY_TICK, TimeUnit.MILLISECONDS),
+      Duration.create(DISPLAY_TICK_MS, TimeUnit.MILLISECONDS),
       scrollingActor,
       ScrollingDisplayActor.Tick
     ))

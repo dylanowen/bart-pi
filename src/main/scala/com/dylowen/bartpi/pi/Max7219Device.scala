@@ -32,7 +32,6 @@ trait Max7219Device {
   def write(buffer: Array[Byte]): Unit
 }
 
-
 object Max7219Simulator {
   val CELL_SIZE: Int = 25
   val LED_SIZE: Int = 20
