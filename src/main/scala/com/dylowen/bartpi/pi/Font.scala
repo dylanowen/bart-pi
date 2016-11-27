@@ -17,7 +17,10 @@ trait Font {
   def get(string: String): Array[Glyph] = string.map(get).toArray
 
   // use filled space for unsupported
-  protected lazy val UNSUPPORTED: Glyph = stringToGlyph("*" * DEFAULT_WIDTH * DEFAULT_HEIGHT)
+  protected lazy val UNSUPPORTED: Glyph = {
+    val width: Int = if (DEFAULT_WIDTH % 2 == 1) DEFAULT_WIDTH else DEFAULT_WIDTH - 1
+    stringToGlyph("* " * (width * DEFAULT_HEIGHT / 2), width)
+  }
 
   protected def stringToGlyph(rawString: String, width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT): Glyph = {
     assert(rawString.length == width * height)

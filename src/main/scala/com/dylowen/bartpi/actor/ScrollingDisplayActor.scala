@@ -33,7 +33,8 @@ class ScrollingDisplayActor() extends Actor with ActorLogging {
   private var maybeMax: Option[Max7219] = None
 
   private var messageQueue: mutable.ListBuffer[InternalMessage] = new mutable.ListBuffer[InternalMessage]()
-  messageQueue += new InternalMessage(null, "*BOOT+UP*", false)
+  messageQueue += new InternalMessage(null, "*BOOT UP*", false)
+  //messageQueue += new InternalMessage(null, (' ' to '~').toArray.mkString(""), false)
 
   private var currentMessage: String = ""
   private var charIndex: Int = 0

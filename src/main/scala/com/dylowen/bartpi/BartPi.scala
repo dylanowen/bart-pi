@@ -1,9 +1,11 @@
 package com.dylowen.bartpi
 
+import java.util.Locale
+
 import akka.actor.ActorSystem
 import com.dylowen.bartpi.actor.ScrollingDisplayActor.RegisterMax
 import com.dylowen.bartpi.actor.{ScrollingDisplayActor, ScrollingDisplayActor$}
-import com.dylowen.bartpi.pi.Max7219
+import com.dylowen.bartpi.pi.{DefaultFont8x6, Max7219}
 import com.dylowen.bartpi.utils.{ApplicationLifecycle, Properties}
 import com.dylowen.bartpi.web.Server
 
@@ -23,6 +25,9 @@ object BartPi {
   def main(args: Array[String]): Unit = {
     val host: String = Properties.get("server.host")
     val port: Int = Properties.get("server.port").toInt
+
+    // set default locale to en_us for date parsing
+    Locale.setDefault(Locale.US)
 
     // this kind of sucks for keeping track of this
     val max: Max7219 = new Max7219(4)
