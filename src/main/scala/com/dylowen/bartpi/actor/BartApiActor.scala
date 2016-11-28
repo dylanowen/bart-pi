@@ -13,6 +13,7 @@ import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import com.dylowen.bartpi.api._
 import com.dylowen.bartpi.utils.Properties
 
+import scala.util.Try
 import scala.xml.NodeSeq
 
 /**
@@ -21,7 +22,16 @@ import scala.xml.NodeSeq
   * @author dylan.owen
   * @since Nov-2016
   */
+object BartApiActor {
+  private val BART_HOST: String = Properties.get("bart.api.host")
+  private val BART_KEY: String = Properties.get("bart.api.key")
+
+  case object Departure
+
+  def props: Props = Props(new BartApiActor())
+}
 class BartApiActor extends Actor with ActorLogging {
+
   import BartApiActor._
   import context.dispatcher
 
@@ -32,7 +42,6 @@ class BartApiActor extends Actor with ActorLogging {
   private val http = Http(context.system)
 
   override def receive: Actor.Receive = {
-    // if we receive an empty departure message fill in the defaults
     case Departure =>
       val station: StationDefinition = StationDefinitions.getByString(Properties.get("bart.station")).getOrElse(StationDefinitions.`12TH`)
       val direction: Option[Direction] = Directions.getByString(Properties.get("bart.direction"))
@@ -43,12 +52,13 @@ class BartApiActor extends Actor with ActorLogging {
             if (!findError(node)) {
               handleDeparturesResponse(node)
             }
+          }).recover({
+            case e => handleError("Failed to parse response", Some(e))
           })
         case HttpResponse(code, _, _, _) =>
           handleError("Request failed, response code: " + code)
       })
-    case _ =>
-      handleError("Invalid request")
+    case any => log.error("Invalid request: " + any)
   }
 
   private def buildDeparturesRequest(origin: StationDefinition, direction: Option[Direction] = None): HttpRequest = {
@@ -65,7 +75,7 @@ class BartApiActor extends Actor with ActorLogging {
       case Left(error) =>
         log.error(error.message)
         Set.empty
-      }
+    }
     val direction: Direction = Directions.getByString(Properties.get("bart.direction")).get
     val timeThreshold: Int = Properties.get("bart.time.threshold").toInt
 
@@ -77,15 +87,12 @@ class BartApiActor extends Actor with ActorLogging {
       .filter(departure => lines.contains(departure.estimates.head.line))
 
     val now = Instant.now()
-    val message = departures.map(departure => {
+    val message = departures.flatMap(departure => {
         departure.estimates
           .filter(_.departureTime.minus(timeThreshold, ChronoUnit.MINUTES).compareTo(now) > 0)
-          .sortBy(_.departureTime)
-          .headOption
           .map(estimate => (estimate.departureTime, departure.destination.abbr))
+          .slice(0, 2) // just get 2 for each line
       })
-      .filter(_.isDefined)
-      .map(_.get)
       .sortBy(_._1)
       .map({ case (time, station) => station + ":" + now.until(time, ChronoUnit.MINUTES) })
       .mkString(" ")
@@ -117,19 +124,16 @@ class BartApiActor extends Actor with ActorLogging {
     }
   }
 
-  private def handleError(errorMessage: String): Unit = {
+  private def handleError(errorMessage: String, t: Option[Throwable] = None): Unit = {
     // tell our status to track an error
+    displayActor ! ScrollingDisplayActor.DisplayMessage(errorMessage)
     statusActor ! StatusActor.Write(error = true)
-    log.error(errorMessage)
+    if (t.isDefined) {
+      log.error(t.get, errorMessage)
+    }
+    else {
+      log.error(errorMessage)
+    }
   }
-}
-
-object BartApiActor {
-  private val BART_HOST: String = Properties.get("bart.api.host")
-  private val BART_KEY: String = Properties.get("bart.api.key")
-
-  case object Departure
-
-  def props: Props = Props(new BartApiActor())
 }
 

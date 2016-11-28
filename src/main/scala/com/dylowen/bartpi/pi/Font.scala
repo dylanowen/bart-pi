@@ -8,6 +8,15 @@ import scala.collection.BitSet
   * @author dylan.owen
   * @since Nov-2016
   */
+object Font {
+  // Symbols
+  val DEGREE: Char = '\u00B0'
+
+  // Emoji
+  val SUNNY: Char = '\u2600'
+  val CLOUDY: Char = '\u2601'
+  val PARTLY_SUNNY: Char = '\u2601'
+}
 trait Font {
   val DEFAULT_WIDTH: Int
   val DEFAULT_HEIGHT: Int

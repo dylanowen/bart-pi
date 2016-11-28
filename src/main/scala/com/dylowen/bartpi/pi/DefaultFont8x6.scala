@@ -31,7 +31,16 @@ object DefaultFont8x6 extends Font {
     UNSUPPORTED, //  '"'
     UNSUPPORTED, //  '#'
     UNSUPPORTED, //  '$'
-    UNSUPPORTED, //  '%'
+    stringToGlyph(
+        "      " +
+        "**   *" +
+        "**  * " +
+        "   *  " +
+        "  *   " +
+        " *  **" +
+        "*   **" +
+        "      "
+      , 6), //  '%'
     UNSUPPORTED, //  '&'
     UNSUPPORTED, //  '''
     stringToGlyph(
@@ -104,7 +113,16 @@ object DefaultFont8x6 extends Font {
         " ** " +
         " ** "
     , 4), //  '.'
-    UNSUPPORTED, //  '/'
+    stringToGlyph(
+        "      " +
+        "     *" +
+        "    * " +
+        "   *  " +
+        "  *   " +
+        " *    " +
+        "*     " +
+        "      "
+      , 6), //  '/'
     stringToGlyph(
         " **** " +
         "**  **" +
@@ -844,6 +862,30 @@ object DefaultFont8x6 extends Font {
     ) //  '~'
   )
 
+  val DEGREE: Glyph = stringToGlyph(
+      "**" +
+      "**" +
+      "  " +
+      "  " +
+      "  " +
+      "  " +
+      "  " +
+      "  "
+    , 2)
+
+  val SUNNY: Glyph = stringToGlyph(
+      "   *   " +
+      " * * * " +
+      "  ***  " +
+      "*******" +
+      "  ***  " +
+      " * * * " +
+      "   *   " +
+      "       "
+  , 7)
+  val CLOUDY: Glyph = UNSUPPORTED
+  val PARTLY_SUNNY: Glyph = UNSUPPORTED
+
   /*
   val ALIEN: BitSet = stringToBitSet(
       " ***** " +
@@ -857,12 +899,12 @@ object DefaultFont8x6 extends Font {
   )
   */
 
-  override def get(char: Char): Glyph = {
-    if (char >= START_INDEX && char < FONT.length + START_INDEX) {
-      FONT(char - START_INDEX)
-    }
-    else {
-      UNSUPPORTED
-    }
+  override def get(c: Char): Glyph = c match {
+    case char if char >= START_INDEX && char < FONT.length + START_INDEX => FONT(char - START_INDEX)
+    case Font.DEGREE => DEGREE
+    case Font.SUNNY => SUNNY
+    case Font.CLOUDY => CLOUDY
+    case Font.PARTLY_SUNNY => PARTLY_SUNNY
+    case _ => UNSUPPORTED
   }
 }

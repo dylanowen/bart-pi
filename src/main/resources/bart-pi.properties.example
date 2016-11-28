@@ -6,3 +6,6 @@ bart.station=12th
 bart.lines=RED,YELLOW
 bart.direction=SOUTH
 bart.time.threshold=5
+weather.api.host=https://api.darksky.net/forecast/
+weather.api.key=Find a key here: https://darksky.net/dev/register
+weather.lat-lng=Get Lat Lng here: http://www.latlong.net/

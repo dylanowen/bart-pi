@@ -3,10 +3,10 @@ package com.dylowen.bartpi
 import java.util.concurrent.TimeUnit
 
 import akka.actor.{ActorSystem, Cancellable}
-import com.dylowen.bartpi.actor.{BartApiActor, ScrollingDisplayActor}
+import com.dylowen.bartpi.actor.{BartApiActor, ScrollingDisplayActor, WeatherApiActor}
 import com.dylowen.bartpi.utils.ApplicationLifecycle
 
-import scala.concurrent.duration.Duration
+import scala.concurrent.duration.{Duration, FiniteDuration}
 
 /**
   * TODO add description
@@ -15,8 +15,9 @@ import scala.concurrent.duration.Duration
   * @since Nov-2016
   */
 object Scheduler {
-  val BART_UPDATE_S = 30
-  val DISPLAY_TICK_MS = 75
+  val DISPLAY_TICK: FiniteDuration = Duration.create(75, TimeUnit.MILLISECONDS)
+  val BART_UPDATE: FiniteDuration = Duration.create(30, TimeUnit.SECONDS)
+  val WEATHER_UPDATE: FiniteDuration = Duration.create(30, TimeUnit.MINUTES)
 }
 class Scheduler()(private implicit val system: ActorSystem) extends ApplicationLifecycle {
 
@@ -24,30 +25,39 @@ class Scheduler()(private implicit val system: ActorSystem) extends ApplicationL
 
   private implicit val executionContext = system.dispatcher
 
-  private val updateBartActor = system.actorOf(BartApiActor.props)
+  private val bartApiActor = system.actorOf(BartApiActor.props)
+  private val weatherApiActor = system.actorOf(WeatherApiActor.props)
   private val scrollingActor = ScrollingDisplayActor.get
-  private var bartUpdater: Option[Cancellable] = None
   private var screenUpdater: Option[Cancellable] = None
+  private var bartUpdater: Option[Cancellable] = None
+  private var weatherUpdater: Option[Cancellable] = None
 
   def start(): Unit = {
     stop()
-    this.bartUpdater = Some(this.system.scheduler.schedule(
-      Duration.Zero,
-      Duration.create(BART_UPDATE_S, TimeUnit.SECONDS),
-      updateBartActor,
-      BartApiActor.Departure
-    ))
     this.screenUpdater = Some(this.system.scheduler.schedule(
       Duration.Zero,
-      Duration.create(DISPLAY_TICK_MS, TimeUnit.MILLISECONDS),
+      DISPLAY_TICK,
       scrollingActor,
       ScrollingDisplayActor.Tick
+    ))
+    this.bartUpdater = Some(this.system.scheduler.schedule(
+      Duration.Zero,
+      BART_UPDATE,
+      bartApiActor,
+      BartApiActor.Departure
+    ))
+    this.weatherUpdater = Some(this.system.scheduler.schedule(
+      Duration.Zero,
+      WEATHER_UPDATE,
+      weatherApiActor,
+      WeatherApiActor.WeatherByZip
     ))
   }
 
   def stop(): Unit = {
-    this.bartUpdater.foreach(_.cancel())
     this.screenUpdater.foreach(_.cancel())
+    this.bartUpdater.foreach(_.cancel())
+    this.weatherUpdater.foreach(_.cancel())
   }
 
   start()

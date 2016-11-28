@@ -14,6 +14,7 @@ libraryDependencies ++= Seq(
   "de.heikoseeberger" %% "akka-http-json4s" % "1.5.3",
   "org.scala-lang.modules" %% "scala-parser-combinators" % "1.0.4",
   "org.json4s" %% "json4s-jackson" % "3.5.0",
+  "org.json4s" %% "json4s-native" % "3.5.0",
   "com.pi4j" % "pi4j-core" % "1.1"
 )
     

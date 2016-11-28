@@ -3,6 +3,7 @@ package com.dylowen.bartpi.api
 import java.time.Instant
 import java.time.temporal.{ChronoUnit, TemporalUnit}
 
+import scala.util.Try
 import scala.xml.{Node, NodeSeq}
 
 /**
@@ -24,7 +25,8 @@ class StationDeparture(val destination: StationDefinition, val estimates: Seq[Es
 
 object Estimate {
   def apply(xml: Node, requestDateTime: Instant): Estimate = {
-    val minutes: Int = (xml \ "minutes").text.toInt
+    // minutes can also be "leaving" so ignore it in that case
+    val minutes: Int = Try((xml \ "minutes").text.toInt).getOrElse(0)
     val departureTime: Instant = requestDateTime.plus(minutes, ChronoUnit.MINUTES)
     val line: Line = Lines.getByString((xml \ "color").text).get
     val direction: Direction = Directions.getByString((xml \ "direction").text).get

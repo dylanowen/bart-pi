@@ -77,16 +77,6 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   // default intensity
   runCommand(INTENSITY, 0x0)
 
-  /*
-  // debug display
-  setBit(0, 0)
-  setBit(0, MAX_Y - 1)
-  setBit(MAX_X - 1, 0)
-  setBit(MAX_X - 1, MAX_Y - 1)
-  flush()
-  Thread.sleep(100)
-  */
-
   clear()
   flush()
 

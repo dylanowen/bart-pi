@@ -70,8 +70,6 @@ class ScrollingDisplayActor() extends Actor with ActorLogging {
       if (!found && !internalMessage.message.isEmpty) {
         this.messageQueue += internalMessage
       }
-
-      println("klj")
     }
     case Tick => this.maybeMax.foreach(max => {
       max.shiftLeft()
