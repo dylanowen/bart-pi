@@ -8,6 +8,7 @@ import akka.http.scaladsl.model.Uri.Query
 import akka.http.scaladsl.model.{HttpRequest, HttpResponse, StatusCodes, Uri}
 import akka.http.scaladsl.unmarshalling.Unmarshal
 import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
+import com.dylowen.bartpi.pi.Font
 import com.dylowen.bartpi.utils.Properties
 import com.fasterxml.jackson.databind.JsonMappingException
 import de.heikoseeberger.akkahttpjson4s.Json4sSupport
@@ -60,7 +61,7 @@ class WeatherApiActor extends Actor with ActorLogging {
 
             var message = temp + "°"
             if (rainChance > 0) {
-              message += " rain:" + rainChance + "%"
+              message += "" + Font.RAINY + ":" + rainChance + "%"
             }
 
             displayActor ! ScrollingDisplayActor.DisplayMessage(message, repeat = true)

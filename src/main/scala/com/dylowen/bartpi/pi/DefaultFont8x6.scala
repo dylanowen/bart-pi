@@ -122,7 +122,7 @@ object DefaultFont8x6 extends Font {
         " *    " +
         "*     " +
         "      "
-      , 6), //  '/'
+    ), //  '/'
     stringToGlyph(
         " **** " +
         "**  **" +
@@ -546,7 +546,16 @@ object DefaultFont8x6 extends Font {
         " *   " +
         " *** "
     , 5), //  '['
-    UNSUPPORTED, //  '/'
+    stringToGlyph(
+        "      " +
+        "*     " +
+        " *    " +
+        "  *   " +
+        "   *  " +
+        "    * " +
+        "     *" +
+        "      "
+    ), //  '\'
     stringToGlyph(
         " *** " +
         "   * " +
@@ -609,7 +618,16 @@ object DefaultFont8x6 extends Font {
         "**  **" +
         " *****"
     ), //  'd'
-    UNSUPPORTED, //  'e'
+    stringToGlyph(
+        "      " +
+        "      " +
+        "      " +
+        " **** " +
+        "**  **" +
+        "******" +
+        "**    " +
+        " **** "
+    ), //  'e'
     stringToGlyph(
         "  **" +
         " ** " +
@@ -885,6 +903,44 @@ object DefaultFont8x6 extends Font {
   , 7)
   val CLOUDY: Glyph = UNSUPPORTED
   val PARTLY_SUNNY: Glyph = UNSUPPORTED
+  // technically U+1F327 but I don't want to deal with glyphs out of U+9999
+  val RAINY: Glyph = stringToGlyph(
+      "     ** " +
+      " ** ****" +
+      "********" +
+      "******* " +
+      " *  *  *" +
+      " *   * *" +
+      "  *  *  " +
+      "  *    *" +
+
+      "     ** " +
+      " ** ****" +
+      "********" +
+      "******* " +
+      "  * *   " +
+      " *  *  *" +
+      " *   * *" +
+      "  *  *  " +
+
+      "     ** " +
+      " ** ****" +
+      "********" +
+      "******* " +
+      "  *     " +
+      "  * *   " +
+      " *  *  *" +
+      " *   * *" +
+
+      "     ** " +
+      " ** ****" +
+      "********" +
+      "******* " +
+      " *     *" +
+      "  *     " +
+      "  * *   " +
+      " *  *  *"
+    , 8, 8, animated = true)
 
   /*
   val ALIEN: BitSet = stringToBitSet(
@@ -905,6 +961,7 @@ object DefaultFont8x6 extends Font {
     case Font.SUNNY => SUNNY
     case Font.CLOUDY => CLOUDY
     case Font.PARTLY_SUNNY => PARTLY_SUNNY
+    case Font.RAINY => RAINY
     case _ => UNSUPPORTED
   }
 }

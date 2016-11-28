@@ -8,6 +8,7 @@ import com.dylowen.bartpi.actor.{ScrollingDisplayActor, ScrollingDisplayActor$}
 import com.dylowen.bartpi.pi.{DefaultFont8x6, Max7219}
 import com.dylowen.bartpi.utils.{ApplicationLifecycle, Properties}
 import com.dylowen.bartpi.web.Server
+import com.pi4j.io.spi.SpiChannel
 
 import scala.io.StdIn
 
@@ -30,7 +31,7 @@ object BartPi {
     Locale.setDefault(Locale.US)
 
     // this kind of sucks for keeping track of this
-    val max: Max7219 = new Max7219(4)
+    val max: Max7219 = new Max7219(SpiChannel.CS0, 4)
     val display = ScrollingDisplayActor.get
     display ! RegisterMax(max)
 

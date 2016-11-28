@@ -2,10 +2,9 @@ package com.dylowen.bartpi.pi
 
 import com.dylowen.bartpi.pi.Gpio._
 import com.dylowen.bartpi.utils.ApplicationLifecycle
-import com.pi4j.io.spi.{SpiChannel, SpiDevice, SpiFactory}
+import com.pi4j.io.spi.SpiChannel
 
-import scala.collection.{BitSet, mutable}
-import scala.util.Try
+import scala.collection.BitSet
 
 /**
   * Definitely not threadsafe
@@ -55,13 +54,14 @@ object Max7219 {
   val DISPLAY_WIDTH: Int = 8
   val DISPLAY_HEIGHT: Int = 8
 }
-class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
+
+class Max7219(channel: SpiChannel, val chained: Int) extends ApplicationLifecycle {
   import Max7219._
 
   val MAX_X: Int = this.chained * DISPLAY_WIDTH
   val MAX_Y: Int = DISPLAY_HEIGHT
 
-  private val spi: Max7219Device = Max7219Device.get(SpiChannel.CS0, chained)
+  private val spi: Max7219Device = Max7219Device.get(channel, chained)
 
   private val changedRows: Array[Boolean] = Array.ofDim(DISPLAY_HEIGHT)
   private val displayBuffer: Array[Byte] = Array.ofDim(this.chained * DISPLAY_HEIGHT)
@@ -80,8 +80,9 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
   clear()
   flush()
 
-  println("initialized")
-
+  //set(DefaultFont8x6.RAINY, 0, 0)
+  //flush()
+  //Thread.sleep(100000)
 
   def runCommand(command: Command, data: Int): Unit = runCommand(command, data.toByte)
 
@@ -104,7 +105,9 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
     }
   }
 
-  def set(char: Glyph, x: Int, y: Int): Unit = set(char.bits, char.width, char.height, x, y)
+  def set(char: Glyph, x: Int, y: Int): Unit = set(char, 0, x, y)
+
+  def set(char: Glyph, frame: Int, x: Int, y: Int): Unit = set(char.getFrame(frame), char.width, char.height, x, y)
 
   def set(input: BitSet, width: Int, height: Int, x: Int, y: Int): Unit = {
     for (inX <- 0 until width) {
@@ -112,28 +115,6 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         val bit: Boolean = input(inX + inY * width)
         setBit(x + inX, y + inY, bit)
       }
-    }
-  }
-
-  def setBit(x: Int, y: Int, value: Boolean = true): Unit = {
-    if (x >= 0 && y >= 0 && x < MAX_X && y < MAX_Y) {
-      // mark this row as having changed
-      changedRows(y) = true
-
-      // transpose the bits to display nicely on our screen
-      val bitIndex: Int = (BYTE_BITS - 1) - (x % BYTE_BITS)
-      // get the index of our real byte
-      val byteIndex: Int = x / BYTE_BITS + y * this.chained
-      val oldByte: Byte = displayBuffer(byteIndex)
-      // OR or AND depending on if we're setting or clearing
-      val newByte: Byte = if (value) {
-        oldByte | (0x1 << bitIndex)
-      }
-      else {
-        oldByte & ~(0x1 << bitIndex)
-      }
-
-      displayBuffer(byteIndex) = newByte
     }
   }
 
@@ -205,6 +186,28 @@ class Max7219(val chained: Int = 1) extends ApplicationLifecycle {
         displayBuffer(i) = carried(x)
         carried(x) = temp
       }
+    }
+  }
+
+  def setBit(x: Int, y: Int, value: Boolean = true): Unit = {
+    if (x >= 0 && y >= 0 && x < MAX_X && y < MAX_Y) {
+      // mark this row as having changed
+      changedRows(y) = true
+
+      // transpose the bits to display nicely on our screen
+      val bitIndex: Int = (BYTE_BITS - 1) - (x % BYTE_BITS)
+      // get the index of our real byte
+      val byteIndex: Int = x / BYTE_BITS + y * this.chained
+      val oldByte: Byte = displayBuffer(byteIndex)
+      // OR or AND depending on if we're setting or clearing
+      val newByte: Byte = if (value) {
+        oldByte | (0x1 << bitIndex)
+      }
+      else {
+        oldByte & ~(0x1 << bitIndex)
+      }
+
+      displayBuffer(byteIndex) = newByte
     }
   }
 

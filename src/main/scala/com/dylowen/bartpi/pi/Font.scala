@@ -16,6 +16,7 @@ object Font {
   val SUNNY: Char = '\u2600'
   val CLOUDY: Char = '\u2601'
   val PARTLY_SUNNY: Char = '\u2601'
+  val RAINY: Char = '\u2614'
 }
 trait Font {
   val DEFAULT_WIDTH: Int
@@ -31,8 +32,14 @@ trait Font {
     stringToGlyph("* " * (width * DEFAULT_HEIGHT / 2), width)
   }
 
-  protected def stringToGlyph(rawString: String, width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT): Glyph = {
-    assert(rawString.length == width * height)
+  protected def stringToGlyph(rawString: String, width: Int = DEFAULT_WIDTH, height: Int = DEFAULT_HEIGHT, animated: Boolean = false): Glyph = {
+    if (!animated) {
+      assert(rawString.length == width * height)
+    }
+    else {
+      assert(rawString.length % width % height == 0)
+    }
+
     val builder = BitSet.newBuilder
     builder.sizeHint(rawString.length)
 
@@ -42,7 +49,15 @@ trait Font {
       }
     }
 
-    Glyph(builder.result(), width, height)
+    Glyph(builder.result(), width, height, animated)
   }
 }
-case class Glyph(bits: BitSet, width: Int, height: Int)
+case class Glyph(bits: BitSet, width: Int, height: Int, animated: Boolean) {
+  def frames: Int = if (!animated) 1 else bits.size / width / height
+
+  def getFrame(i: Int): BitSet = {
+    val start: Int = i * width * height
+    val end: Int = (i + 1) * width * height
+    bits.slice(start, end)
+  }
+}

@@ -24,7 +24,7 @@ object Max7219Device {
     }
     catch {
       // catch every exception for local debugging
-      case _ => new Max7219Simulator(chained)
+      case _: Throwable => new Max7219Simulator(chained)
     }
   }
 }
