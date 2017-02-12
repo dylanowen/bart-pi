@@ -13,7 +13,6 @@ import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import com.dylowen.bartpi.api._
 import com.dylowen.bartpi.utils.Properties
 
-import scala.util.Try
 import scala.xml.NodeSeq
 
 /**
@@ -69,6 +68,8 @@ class BartApiActor extends Actor with ActorLogging {
   }
 
   private def handleDeparturesResponse(node: NodeSeq): Unit = {
+    val now = Instant.now()
+
     // TODO this parsing / error handling is terrible
     val lines: Set[Line] = Lines.parseLines(Properties.get("bart.lines")) match {
       case Right(parsedLines) => parsedLines
@@ -77,7 +78,11 @@ class BartApiActor extends Actor with ActorLogging {
         Set.empty
     }
     val direction: Direction = Directions.getByString(Properties.get("bart.direction")).get
-    val timeThreshold: Int = Properties.get("bart.time.threshold").toInt
+    val timeThreshold: (Int, Int) = Properties.get("bart.time.threshold").split("-")
+      .map(_.toInt) match {
+      case Array(min, max) => (min, max)
+      case Array(min) => (min, Int.MaxValue)
+    }
 
     //TODO this breaks with no data (in the middle of the night)
     // filter our departures
@@ -86,10 +91,11 @@ class BartApiActor extends Actor with ActorLogging {
       .filter(_.estimates.head.direction == direction)
       .filter(departure => lines.contains(departure.estimates.head.line))
 
-    val now = Instant.now()
+
     val message = departures.flatMap(departure => {
         departure.estimates
-          .filter(_.departureTime.minus(timeThreshold, ChronoUnit.MINUTES).compareTo(now) > 0)
+          .filter(_.departureTime.minus(timeThreshold._1, ChronoUnit.MINUTES).compareTo(now) > 0)
+          .filter(_.departureTime.minus(timeThreshold._2, ChronoUnit.MINUTES).compareTo(now) <= 0)
           .map(estimate => (estimate.departureTime, departure.destination.abbr))
           .slice(0, 2) // just get 2 for each line
       })
