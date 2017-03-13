@@ -13,6 +13,7 @@ import akka.stream.{ActorMaterializer, ActorMaterializerSettings}
 import com.dylowen.bartpi.api._
 import com.dylowen.bartpi.utils.Properties
 
+import scala.concurrent.Future
 import scala.xml.NodeSeq
 
 /**
@@ -45,7 +46,7 @@ class BartApiActor extends Actor with ActorLogging {
       val station: StationDefinition = StationDefinitions.getByString(Properties.get("bart.station")).getOrElse(StationDefinitions.`12TH`)
       val direction: Option[Direction] = Directions.getByString(Properties.get("bart.direction"))
 
-      http.singleRequest(buildDeparturesRequest(station, direction)).map({
+      buildDeparturesRequest(station, direction).map({
         case HttpResponse(StatusCodes.OK, _, entity, _) =>
           Unmarshal(entity).to[NodeSeq].map((node) => {
             if (!findError(node)) {
@@ -60,7 +61,7 @@ class BartApiActor extends Actor with ActorLogging {
     case any => log.error("Invalid request: " + any)
   }
 
-  private def buildDeparturesRequest(origin: StationDefinition, direction: Option[Direction] = None): HttpRequest = {
+  private def buildDeparturesRequest(origin: StationDefinition, direction: Option[Direction] = None): Future[HttpResponse] = {
     var query: Query = Query("cmd" -> "etd", "orig" -> origin.abbr)
     direction.foreach(dir => query = query.+:("dir", dir.abbr))
 
@@ -108,13 +109,16 @@ class BartApiActor extends Actor with ActorLogging {
     statusActor ! StatusActor.Write(update = true)
   }
 
-  private def buildRequest(path: String, query: Query = Query.Empty): HttpRequest = {
+  private def buildRequest(path: String, query: Query = Query.Empty): Future[HttpResponse] = {
     val finalQuery: Query = query.+:("key" -> BART_KEY)
     val uri = Uri(BART_HOST + path + ".aspx").withQuery(finalQuery)
     val request = HttpRequest(uri = uri)
-    log.debug(request.toString())
+    log.debug(request.toString)
 
-    request
+    val response = http.singleRequest(request)
+    response.foreach(response => log.debug(response.toString))
+
+    response
   }
 
   private def findError(node: NodeSeq): Boolean = {

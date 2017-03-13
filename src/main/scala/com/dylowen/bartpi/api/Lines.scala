@@ -21,6 +21,7 @@ object Lines extends EnumBuilder[Line] with RegexParsers {
   val YELLOW = register(new Line("YELLOW"))
   val GREEN = register(new Line("GREEN"))
   val BLUE = register(new Line("BLUE"))
+  val WHITE = register(new Line("WHITE"))
 
   build()
 
