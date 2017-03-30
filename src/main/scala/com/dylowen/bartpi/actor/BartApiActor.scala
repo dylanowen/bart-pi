@@ -78,7 +78,7 @@ class BartApiActor extends Actor with ActorLogging {
         log.error(error.message)
         Set.empty
     }
-    val direction: Direction = Directions.getByString(Properties.get("bart.direction")).get
+    val direction: Direction = Directions.getByString(Properties.get("bart.direction")).getOrElse(Directions.UNKNOWN)
     val timeThreshold: (Int, Int) = Properties.get("bart.time.threshold").split("-")
       .map(_.toInt) match {
       case Array(min, max) => (min, max)

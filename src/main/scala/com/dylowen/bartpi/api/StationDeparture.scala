@@ -14,7 +14,8 @@ import scala.xml.{Node, NodeSeq}
   */
 object StationDeparture {
   def apply(xml: Node, requestDateTime: Instant): StationDeparture = {
-    val destination: StationDefinition = StationDefinitions.getByString((xml \ "abbreviation").text).get
+    val destination: StationDefinition = StationDefinitions.getByString((xml \ "abbreviation").text)
+      .getOrElse(StationDefinitions.UNKNOWN)
     val estimates: Seq[Estimate] = (xml \ "estimate").map(Estimate.apply(_, requestDateTime))
 
     new StationDeparture(destination, estimates)
@@ -28,8 +29,8 @@ object Estimate {
     // minutes can also be "leaving" so ignore it in that case
     val minutes: Int = Try((xml \ "minutes").text.toInt).getOrElse(0)
     val departureTime: Instant = requestDateTime.plus(minutes, ChronoUnit.MINUTES)
-    val line: Line = Lines.getByString((xml \ "color").text).get
-    val direction: Direction = Directions.getByString((xml \ "direction").text).get
+    val line: Line = Lines.getByString((xml \ "color").text).getOrElse(Lines.UNKNOWN)
+    val direction: Direction = Directions.getByString((xml \ "direction").text).getOrElse(Directions.UNKNOWN)
 
     new Estimate(departureTime, line, direction)
   }

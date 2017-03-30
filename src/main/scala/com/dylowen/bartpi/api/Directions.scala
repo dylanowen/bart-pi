@@ -15,5 +15,7 @@ object Directions extends EnumBuilder[Direction] {
   val NORTH = register(new Direction("NORTH", "n"))
   val SOUTH = register(new Direction("SOUTH", "s"))
 
+  val UNKNOWN = new Direction("UNKNOWN", "U")
+
   build()
 }

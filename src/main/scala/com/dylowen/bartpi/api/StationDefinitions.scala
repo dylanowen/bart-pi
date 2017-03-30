@@ -54,9 +54,12 @@ object StationDefinitions extends EnumBuilder[StationDefinition] {
   val SHAY = register(new StationDefinition("SHAY", "South Hayward"))
   val SSAN = register(new StationDefinition("SSAN", "South San Francisco"))
   val UCTY = register(new StationDefinition("UCTY", "Union City"))
+  val WARM = register(new StationDefinition("WARM", "Warm Springs"))
   val WCRK = register(new StationDefinition("WCRK", "Walnut Creek"))
   val WDUB = register(new StationDefinition("WDUB", "West Dublin/Pleasanton"))
   val WOAK = register(new StationDefinition("WOAK", "West Oakland"))
+
+  val UNKNOWN = new StationDefinition("UNKN", "Unknown")
 
   build()
 }

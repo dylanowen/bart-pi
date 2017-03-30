@@ -23,6 +23,8 @@ object Lines extends EnumBuilder[Line] with RegexParsers {
   val BLUE = register(new Line("BLUE"))
   val WHITE = register(new Line("WHITE"))
 
+  val UNKNOWN = new Line("UNKNOWN")
+
   build()
 
   case class LineLexerError(message: String)
@@ -31,7 +33,9 @@ object Lines extends EnumBuilder[Line] with RegexParsers {
   override def skipWhitespace = true
   override val whiteSpace = "[ \t\r\f]+".r
 
-  private def lineParser: Parser[Line] = "(?i)(red|orange|yellow|green|blue)".r ^^ { line => getByString(line).get }
+  private def lineParser: Parser[Line] = "(?i)(red|orange|yellow|green|blue)".r ^^ {
+    line => getByString(line).getOrElse(Lines.UNKNOWN)
+  }
   private def comma = "," ^^ (_ => Comma)
 
   private def tokens: Parser[List[Line]] = {
