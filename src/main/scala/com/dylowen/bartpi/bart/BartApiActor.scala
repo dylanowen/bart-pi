@@ -124,7 +124,7 @@ class BartApiActor(display: ActorRef) extends Actor with ActorLogging {
 
   private def handleError(errorMessage: String, t: Option[Throwable] = None): Unit = {
     // tell our status to track an error
-    display ! DisplayActor.DisplayMessage(errorMessage)
+    display ! DisplayActor.DisplayMessage(errorMessage.substring(0, 40))
 
     if (t.isDefined) {
       log.error(t.get, errorMessage)
