@@ -1,9 +1,8 @@
-package com.dylowen.bartpi.actor
+package com.dylowen.bartpi
 
 import akka.actor.{Actor, ActorLogging, ActorRef, Props}
 import com.dylowen.bartpi.pi.{DefaultFont8x6, Font, Glyph, Max7219}
 
-import scala.collection.immutable.ListSet
 import scala.collection.mutable
 
 /**
@@ -12,8 +11,7 @@ import scala.collection.mutable
   * @author dylan.owen
   * @since Nov-2016
   */
-object ScrollingDisplayActor extends SingletonActor {
-  case class RegisterMax(max7219: Max7219)
+object DisplayActor {
   case class DisplayMessage(message: String, repeat: Boolean = false)
   case object Tick
 
@@ -24,24 +22,23 @@ object ScrollingDisplayActor extends SingletonActor {
     override def equals(obj: scala.Any): Boolean = ref.equals(obj)
   }
 
-  override def props = Props(new ScrollingDisplayActor())
+  def props(max: Max7219): Props = Props(new DisplayActor(max))
 }
-class ScrollingDisplayActor() extends Actor with ActorLogging {
-  import ScrollingDisplayActor._
+
+class DisplayActor(max: Max7219) extends Actor with ActorLogging {
+
+  import DisplayActor._
 
   private val font: Font = DefaultFont8x6
-  private var maybeMax: Option[Max7219] = None
 
   private var messageQueue: mutable.ListBuffer[InternalMessage] = new mutable.ListBuffer[InternalMessage]()
   messageQueue += new InternalMessage(null, "*BOOT UP*", false)
-  //messageQueue += new InternalMessage(null, (' ' to '~').toArray.mkString(""), false)
 
   private var currentMessage: String = ""
   private var charIndex: Int = 0
   private var charScrollIndex: Int = 0
 
   override def receive: Actor.Receive = {
-    case RegisterMax(newMax) => this.maybeMax = Some(newMax)
     case DisplayMessage(message, repeat) => {
       log.debug("Show Message: " + message)
 
@@ -71,10 +68,10 @@ class ScrollingDisplayActor() extends Actor with ActorLogging {
         this.messageQueue += internalMessage
       }
     }
-    case Tick => this.maybeMax.foreach(max => {
+    case Tick => {
       max.shiftLeft()
 
-      var displayMessage = true
+      var displayMessage: Boolean = true
       if (this.charIndex >= this.currentMessage.length) {
         displayMessage = initNextMessage()
       }
@@ -93,7 +90,7 @@ class ScrollingDisplayActor() extends Actor with ActorLogging {
       }
 
       max.flush()
-    })
+    }
     case error => log.error("Invalid Request: " + error)
   }
 

@@ -1,9 +1,5 @@
 package com.dylowen.bartpi.pi
 
-import Gpio._
-
-import scala.collection.BitSet
-
 /**
   * http://www.fonts2u.com/led-8x6-regular.font
   *

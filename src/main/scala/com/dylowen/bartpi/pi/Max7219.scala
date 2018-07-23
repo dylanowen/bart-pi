@@ -1,7 +1,6 @@
 package com.dylowen.bartpi.pi
 
 import com.dylowen.bartpi.pi.Gpio._
-import com.dylowen.bartpi.utils.ApplicationLifecycle
 import com.pi4j.io.spi.SpiChannel
 
 import scala.collection.BitSet
@@ -55,7 +54,7 @@ object Max7219 {
   val DISPLAY_HEIGHT: Int = 8
 }
 
-class Max7219(channel: SpiChannel, val chained: Int) extends ApplicationLifecycle {
+class Max7219(channel: SpiChannel, val chained: Int) {
   import Max7219._
 
   val MAX_X: Int = this.chained * DISPLAY_WIDTH
@@ -133,7 +132,7 @@ class Max7219(channel: SpiChannel, val chained: Int) extends ApplicationLifecycl
         displayBuffer(i) = byte
 
         // get the bits we care about at the top
-        carried = (oldByte & shiftMask._2) >> (BYTE_BITS - 1)
+        carried = (oldByte & shiftMask._2) >> (ByteBits - 1)
         // mask out the garbage up top
         carried &= shiftMask._1
       }
@@ -155,7 +154,7 @@ class Max7219(channel: SpiChannel, val chained: Int) extends ApplicationLifecycl
         displayBuffer(i) = byte
 
         // get the bits we care about at the bottom
-        carried = (oldByte & shiftMask._1) << (BYTE_BITS - 1)
+        carried = (oldByte & shiftMask._1) << (ByteBits - 1)
         // mask out the garbage at the bottom
         carried &= shiftMask._2
       }
@@ -195,9 +194,9 @@ class Max7219(channel: SpiChannel, val chained: Int) extends ApplicationLifecycl
       changedRows(y) = true
 
       // transpose the bits to display nicely on our screen
-      val bitIndex: Int = (BYTE_BITS - 1) - (x % BYTE_BITS)
+      val bitIndex: Int = (ByteBits - 1) - (x % ByteBits)
       // get the index of our real byte
-      val byteIndex: Int = x / BYTE_BITS + y * this.chained
+      val byteIndex: Int = x / ByteBits + y * this.chained
       val oldByte: Byte = displayBuffer(byteIndex)
       // OR or AND depending on if we're setting or clearing
       val newByte: Byte = if (value) {

@@ -1,10 +1,10 @@
 package com.dylowen.bartpi.pi
 
 import java.awt.{Color, Graphics}
-import javax.swing.{JFrame, JPanel}
 
 import com.dylowen.bartpi.pi.Gpio._
 import com.pi4j.io.spi.{SpiChannel, SpiDevice, SpiFactory}
+import javax.swing.{JFrame, JPanel}
 
 /**
   * TODO add description
@@ -72,7 +72,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
       for (i <- 0 to 7) {
         val x = (col * Max7219.DISPLAY_WIDTH) + i
         val y = rowIndex
-        val on: Boolean = (buffer(col) >> (Gpio.BYTE_BITS - 1 - i) & 0x1) == 1
+        val on: Boolean = (buffer(col) >> (Gpio.ByteBits - 1 - i) & 0x1) == 1
 
         this.drawingPanel.drawMatrix(x)(y) = on
       }

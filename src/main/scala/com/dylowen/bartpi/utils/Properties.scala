@@ -10,9 +10,9 @@ import java.util.{Properties => JProperties}
   * @since Nov-2016
   */
 object Properties {
-  private val MAIN_PROPERTY_FILE = "bart-pi.properties"
-  private lazy val PROPERTIES: JProperties = {
-    val inputStream: InputStream = Properties.getClass.getResourceAsStream("/" + MAIN_PROPERTY_FILE)
+  private val MainPropertyFile: String = "bart-pi.properties"
+  private lazy val Properties: JProperties = {
+    val inputStream: InputStream = getClass.getResourceAsStream("/" + MainPropertyFile)
     try {
       val properties: JProperties = new JProperties()
       properties.load(inputStream)
@@ -26,6 +26,7 @@ object Properties {
     }
   }
 
-  def get(key: String) = PROPERTIES.getProperty(key)
-  def set(key: String, value: String) = PROPERTIES.setProperty(key, value)
+  def get(key: String): String = Properties.getProperty(key)
+
+  def set(key: String, value: String): Unit = Properties.setProperty(key, value)
 }

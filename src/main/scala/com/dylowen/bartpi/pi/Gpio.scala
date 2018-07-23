@@ -1,5 +1,7 @@
 package com.dylowen.bartpi.pi
 
+import scala.language.implicitConversions
+
 /**
   * TODO add description
   *
@@ -18,9 +20,9 @@ object Gpio {
 
   implicit def intToByte(int: Int): Byte = int.toByte
 
-  val LONG_BITS = java.lang.Long.SIZE
-  val BYTE_BITS = java.lang.Byte.SIZE
-  val BYTES_IN_LONG = LONG_BITS / BYTE_BITS
+  val LongBits: Int = java.lang.Long.SIZE
+  val ByteBits: Int = java.lang.Byte.SIZE
+  val BytesInLong: Int = LongBits / ByteBits
 
   val BYTE_MASK: Int = 0xFF
 
