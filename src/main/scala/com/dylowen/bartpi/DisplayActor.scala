@@ -45,7 +45,7 @@ class DisplayActor(max: Max7219) extends Actor with ActorLogging {
       val internalMessage: InternalMessage = new InternalMessage(sender(), message, repeat)
 
       // see if we have an existing message from this sender
-      val found = this.messageQueue.zipWithIndex
+      val found: Boolean = this.messageQueue.zipWithIndex
           .find({case (internal, _) =>
             // get our message that matches the incoming message
             internal.ref == internalMessage.ref

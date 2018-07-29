@@ -8,7 +8,6 @@ import com.dylowen.bartpi.pi.Max7219
 import com.pi4j.io.spi.SpiChannel
 
 import scala.concurrent.duration._
-import scala.io.StdIn
 import scala.language.postfixOps
 
 
@@ -34,12 +33,14 @@ object BartPi {
     // startup
     val cancelMain: () => Unit = mainLoop(max)
 
-    println("Press RETURN to stop...")
-    StdIn.readLine() // let it run until user presses return
+    // register shutdown
+    sys.ShutdownHookThread({
+      println("Shutting down")
 
-    // shutdown
-    cancelMain()
-    max.stop()
+      cancelMain()
+      max.stop()
+      system.terminate()
+    })
   }
 
   private def mainLoop(max: Max7219)(implicit system: ActorSystem): () => Unit = {

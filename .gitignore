@@ -13,3 +13,6 @@ out
 *.jar
 *.war
 *.ear
+.bash_history
+.sbt
+.ivy2

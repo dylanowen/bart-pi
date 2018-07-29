@@ -1,0 +1,8 @@
+bart-pi {
+    station="EMBR"
+    lines = [
+        "RED",
+        "YELLOW"
+    ]
+    direction = "s"
+}

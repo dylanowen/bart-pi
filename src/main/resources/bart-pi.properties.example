@@ -1,6 +1,0 @@
-bart.api.host=http://api.bart.gov/api/
-bart.api.key=Find a key here: http://api.bart.gov/api/register.aspx
-bart.station=12th
-bart.lines=RED,YELLOW
-bart.direction=s
-bart.time.threshold=5-30
