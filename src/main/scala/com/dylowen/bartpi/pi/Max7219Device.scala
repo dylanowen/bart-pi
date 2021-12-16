@@ -1,10 +1,10 @@
 package com.dylowen.bartpi.pi
 
 import java.awt.{Color, Graphics}
-
 import com.dylowen.bartpi.pi.Gpio._
 import com.pi4j.io.spi.{SpiChannel, SpiDevice, SpiFactory}
-import javax.swing.{JFrame, JPanel}
+
+import javax.swing.{JFrame, JPanel, WindowConstants}
 
 /**
   * TODO add description
@@ -41,7 +41,7 @@ class Max7219Simulator(private val chained: Int = 1) extends Max7219Device {
   val WIDTH: Int = Max7219.DISPLAY_WIDTH * Max7219Simulator.CELL_SIZE * this.chained
 
   private val window: JFrame = new JFrame()
-  window.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE)
+  window.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE)
 
   private val drawingPanel: DrawingPanel = new DrawingPanel()
   window.add(drawingPanel)

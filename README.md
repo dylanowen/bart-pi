@@ -4,24 +4,15 @@
 1. `docker run -v $(pwd):/root --rm dylanowen/sbt-packager-debian sbt debian:packageBin`
 2. `scp target/bart-pi_0.2_all.deb pi@raspberrypi.local:~/`
 3. `ssh pi@raspberrypi.local`
-4. `sudo apt install ./bart-pi_0.2_all.deb`
-5. `JAVA_OPTS="-Dbart-pi.station=12th -Dbart-pi.lines.0=RED -Dbart-pi.lines.1=YELLOW -Dbart-pi.direction=s" bash -c "bart-pi"`
+4. `sudo dpkg -i bart-pi_0.2_all.deb && sudo apt-get install -f`
 
-# Docker
-`https://blog.alexellis.io/getting-started-with-docker-on-raspberry-pi/`
+### Uninstall
+`sudo apt-get remove bart-pi`
 
-<aside class="notice">
-This runs much slower than simply running the java application
-</aside>
+### Update
+1. `docker run -v $(pwd):/root --rm dylanowen/sbt-packager-debian sbt debian:packageBin && scp target/bart-pi_0.2_all.deb pi@raspberrypi.local:~/`
+2. `sudo apt-get remove --yes bart-pi && sudo dpkg -i bart-pi_0.2_all.deb && sudo apt-get install -f`
 
-## Build Manually
-1. `sbt docker:publishLocal`
-2. `docker save dylanowen/bart-pi:latest > ~/Desktop/bart-pi.tar && scp ~/Desktop/bart-pi.tar pi@raspberrypi.local:~/`
-3. `ssh pi@raspberrypi.local`
-4. `docker load -i bart-pi.tar`
-
-## Run
-`docker run --device /dev/spidev0.0 --device /dev/spidev0.1 -e JAVA_OPTS="-Dbart-pi.station=12th -Dbart-pi.lines.0=RED -Dbart-pi.direction=s" dylanowen/bart-pi:latest`
 
 # Simple Build
 `sbt assembly`
